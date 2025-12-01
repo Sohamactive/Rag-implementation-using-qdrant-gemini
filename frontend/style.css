@@ -1,0 +1,10 @@
+body {
+  background: #fafafa;
+  color: #333;
+}
+h1, h2 {
+  color: #222;
+}
+button {
+  cursor: pointer;
+}

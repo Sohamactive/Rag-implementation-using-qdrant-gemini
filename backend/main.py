@@ -8,6 +8,7 @@ from backend.qdrant_utils import init_qdrant # <-- NEW: Import collection initia
 
 app = FastAPI()
 
+
 # --- SERVER LIFECYCLE ---
 @app.on_event("startup")
 async def startup_event():
