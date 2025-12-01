@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini RAG Chat Interface</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; background-color: #f4f7f6; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        .container { background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        form { display: flex; flex-direction: column; gap: 10px; }
+        input[type="file"], input[type="text"], input[type="number"] { padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 15px; background-color: #3498db; color: white; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s; }
+        button:hover { background-color: #2980b9; }
+        #statusMessage { margin-top: 10px; padding: 10px; border-radius: 4px; font-weight: bold; }
+        #statusMessage.success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        #statusMessage.error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        #resultsArea { margin-top: 20px; padding: 15px; background-color: #ecf0f1; border-radius: 4px; }
+        #resultsArea h3 { margin-top: 0; color: #2c3e50; }
+        pre { white-space: pre-wrap; word-wrap: break-word; background-color: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>RAG Document Uploader & Search</h1>
+
+    <div class="container">
+        <h2>1. Upload Document (PDF)</h2>
+        <form id="uploadForm">
+            <input type="file" id="pdfFile" accept=".pdf" required>
+            <button type="submit">Upload & Index Document</button>
+        </form>
+        <div id="uploadStatus" class="statusMessage"></div>
+    </div>
+
+    <div class="container">
+        <h2>2. Search Knowledge Base</h2>
+        <form id="searchForm">
+            <input type="text" id="queryInput" placeholder="Enter your question here (e.g., What is Law?)" required>
+            <label for="kInput">Top K Chunks to Retrieve (Default: 5):</label>
+            <input type="number" id="kInput" value="5" min="1">
+            <button type="submit">Search & Get Answer</button>
+        </form>
+    </div>
+
+    <div id="resultsArea">
+        <h3>Gemini RAG Answer:</h3>
+        <pre id="answerOutput">Answer will appear here...</pre>
+
+        <h3>Chunks Used:</h3>
+        <pre id="chunksOutput">Retrieved chunks will be listed here...</pre>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000'; // Uvicorn Default Address
+
+        // --- Helper Function for Displaying Status ---
+        function displayStatus(elementId, message, isSuccess) {
+            const statusDiv = document.getElementById(elementId);
+            statusDiv.textContent = message;
+            statusDiv.className = isSuccess ? 'statusMessage success' : 'statusMessage error';
+        }
+
+        // --- 1. Handle File Upload ---
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('pdfFile');
+            const statusDiv = 'uploadStatus';
+
+            if (fileInput.files.length === 0) {
+                displayStatus(statusDiv, 'Please select a PDF file.', false);
+                return;
+            }
+
+            displayStatus(statusDiv, 'Uploading and Indexing... Please wait, this may take a moment.', false);
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.status === 'success') {
+                    displayStatus(statusDiv, `SUCCESS: Indexed ${result.details.chunks_uploaded} chunks. Ready for search.`, true);
+                } else {
+                    // Handle API errors (e.g., Qdrant connection issue, mismatched vector size)
+                    displayStatus(statusDiv, `ERROR: Indexing failed. Details: ${result.details || result.message || 'Check server logs.'}`, false);
+                    console.error('Server Error:', result);
+                }
+            } catch (error) {
+                displayStatus(statusDiv, `NETWORK ERROR: Could not connect to the backend at ${API_BASE}.`, false);
+                console.error('Fetch Error:', error);
+            }
+        });
+
+
+        // --- 2. Handle Search Query ---
+        document.getElementById('searchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const query = document.getElementById('queryInput').value;
+            const topK = document.getElementById('kInput').value || 5;
+
+            document.getElementById('answerOutput').textContent = 'Searching...';
+            document.getElementById('chunksOutput').textContent = '...';
+
+            // FastAPI expects FormData for Form(...) parameters
+            const formData = new FormData();
+            formData.append('q', query);
+            formData.append('k', topK);
+
+            try {
+                const response = await fetch(`${API_BASE}/search`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('answerOutput').textContent = result.answer;
+                    document.getElementById('chunksOutput').textContent = result.chunks_used.join('\n\n--- CHUNK ---\n\n');
+                } else {
+                    document.getElementById('answerOutput').textContent = `ERROR: Search failed (Status ${response.status}). Check server logs.`;
+                    document.getElementById('chunksOutput').textContent = JSON.stringify(result, null, 2);
+                    console.error('Search API Error:', result);
+                }
+            } catch (error) {
+                document.getElementById('answerOutput').textContent = `NETWORK ERROR: Could not reach the backend at ${API_BASE}.`;
+                document.getElementById('chunksOutput').textContent = 'Check if Uvicorn is running.';
+                console.error('Fetch Error:', error);
+            }
+        });
+    </script>
+
+</body>
+</html>
