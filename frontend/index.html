@@ -1,39 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>RAG Search App</title>
-  <style>
-    body { font-family: sans-serif; max-width: 800px; margin: 20px auto; }
-    textarea { width: 100%; min-height: 120px; }
-    pre { background: #f4f4f4; padding: 10px; }
-    .hidden { display: none; }
-  </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark">
+  <title>RAG Chat Assistant</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/frontend/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <h1>RAG: Upload & Search</h1>
+  <div class="app-container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h2><i class="fas fa-robot"></i> RAG Assistant</h2>
+      </div>
+      
+      <div class="upload-section">
+        <h3><i class="fas fa-file-pdf"></i> Upload Documents</h3>
+        <form id="upload-form">
+          <label class="file-upload-label" for="file-input">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <span id="file-name">Choose PDF file</span>
+          </label>
+          <input type="file" id="file-input" name="file" accept=".pdf" hidden>
+          <button type="submit" class="upload-btn" disabled>
+            <i class="fas fa-upload"></i> Upload
+          </button>
+        </form>
+        <div id="upload-status" class="upload-status"></div>
+      </div>
 
-  <section>
-    <h2>📄 Upload PDF</h2>
-    <form id="upload-form">
-      <input type="file" name="file" accept=".pdf" required />
-      <button type="submit">Upload PDF</button>
-    </form>
-    <div id="upload-result"></div>
-  </section>
+      <div class="documents-section">
+        <h3><i class="fas fa-folder-open"></i> Uploaded Files</h3>
+        <ul id="document-list" class="document-list">
+          <li class="empty-state">No documents uploaded yet</li>
+        </ul>
+      </div>
 
-  <hr>
+      <div class="sidebar-footer">
+        <div class="settings">
+          <label for="top-k">Results to use:</label>
+          <input type="number" id="top-k" value="5" min="1" max="20">
+        </div>
+        <button id="new-chat-btn" class="new-chat-btn">
+          <i class="fas fa-plus"></i> New Chat
+        </button>
+      </div>
+    </aside>
 
-  <section>
-    <h2>🔍 Search Documents</h2>
-    <form id="search-form">
-      <input type="text" name="q" placeholder="Enter your question" required style="width: 80%;" />
-      <input type="number" name="k" value="5" min="1" style="width: 60px;" />
-      <button type="submit">Search</button>
-    </form>
-    <div id="search-result"></div>
-  </section>
+    <!-- Main Chat Area -->
+    <main class="chat-container">
+      <div class="chat-header">
+        <h1>Chat with your Documents</h1>
+        <p>Upload PDFs and ask questions about their content</p>
+        <span class="session-badge" id="session-badge"></span>
+      </div>
 
-  <script src="script.js"></script>
+      <div class="chat-messages" id="chat-messages">
+        <div class="welcome-message">
+          <div class="welcome-icon">
+            <i class="fas fa-comments"></i>
+          </div>
+          <h2>Welcome to RAG Chat!</h2>
+          <p>Upload your PDF documents using the sidebar, then ask questions about them.</p>
+          <div class="quick-tips">
+            <div class="tip">
+              <i class="fas fa-lightbulb"></i>
+              <span>Upload multiple PDFs to build your knowledge base</span>
+            </div>
+            <div class="tip">
+              <i class="fas fa-search"></i>
+              <span>Ask specific questions for better answers</span>
+            </div>
+            <div class="tip">
+              <i class="fas fa-brain"></i>
+              <span>AI uses your documents to provide accurate responses</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-input-container">
+        <form id="chat-form">
+          <div class="input-wrapper">
+            <textarea 
+              id="chat-input" 
+              placeholder="Ask a question about your documents..." 
+              rows="1"
+              autofocus
+            ></textarea>
+            <button type="submit" id="send-btn" disabled>
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </form>
+        <p class="input-hint">Press Enter to send, Shift+Enter for new line</p>
+      </div>
+    </main>
+  </div>
+
+  <script src="/frontend/script.js"></script>
 </body>
 </html>

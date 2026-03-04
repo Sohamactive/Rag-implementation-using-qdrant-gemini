@@ -1,9 +1,9 @@
 import uuid
 from typing import List
 from pypdf import PdfReader
-
 from backend.embeddings import embed_chunks
 from backend.qdrant_utils import q_client, COLLECTION_NAME
+
 
 
 # 1. Extract text from a PDF file
@@ -26,9 +26,7 @@ def clean_text(text: str) -> str:
     return text
 
 
-#currenlty using count based chunkng
-
-# 3. Split text into chunks
+# 3. Split text into chunks(currenlty using count based chunking)
 def chunk_text(text: str, chunk_size: int = 400, overlap: int = 50) -> List[str]:
     words = text.split(" ")
     chunks = []
@@ -41,8 +39,6 @@ def chunk_text(text: str, chunk_size: int = 400, overlap: int = 50) -> List[str]
         start += (chunk_size - overlap)
 
     return chunks
-
-
 
 
 # 4. Upload vectors + payload to Qdrant
@@ -86,4 +82,3 @@ def process_pdf(file_path: str):
     return {"chunks_uploaded": len(chunks)}
 
 
-print("the collection name is :", COLLECTION_NAME)

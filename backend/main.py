@@ -1,25 +1,26 @@
-import os
-import asyncio # <-- NEW: Required for non-blocking I/O tasks
+﻿import os
+import asyncio
 from fastapi import FastAPI, UploadFile, File, Form
+from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from backend.ingest import process_pdf
 from backend.search import search_query
-from backend.qdrant_utils import init_qdrant # <-- NEW: Import collection initialization
+from backend.qdrant_utils import init_qdrant
+from backend.chat import chat, chat_stream, clear_history, get_conversation_history, advanced_chat
 
 app = FastAPI()
 
+# Serve frontend static files (CSS, JS)
+app.mount("/frontend", StaticFiles(directory="frontend"), name="frontend")
 
-# --- SERVER LIFECYCLE ---
+
 @app.on_event("startup")
 async def startup_event():
-    """Initializes the Qdrant collection when the FastAPI server starts."""
-    # Run the synchronous init_qdrant() in a background thread 
-    # to avoid blocking the Uvicorn startup thread.
-    # We use vector_size=768 as defined in embeddings.py
-    await asyncio.to_thread(init_qdrant, vector_size=768) 
-# --------------------------
+    await asyncio.to_thread(init_qdrant, vector_size=768)
 
-# Enable communication between frontend and backend
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,20 +29,21 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Root endpoint
-@app.get("/")
-def read_root():
-    return {"message": "RAG Backend Running Successfully"}
 
-# Upload endpoint (Now fully Non-Blocking)
+# -- Pages --
+
+@app.get("/")
+async def index():
+    return FileResponse("frontend/index.html")
+
+
+# -- Upload --
+
 @app.post("/upload")
 async def upload_pdf(file: UploadFile = File(...)):
-    
     file_location = f"data/uploads/{file.filename}"
-    file_content = await file.read() # Asynchronous file read
+    file_content = await file.read()
 
-    # FIX 1: Synchronous file writing and directory creation wrapped in to_thread
-    # This prevents blocking the server while writing the file to disk.
     await asyncio.to_thread(
         lambda: (
             os.makedirs(os.path.dirname(file_location), exist_ok=True),
@@ -49,19 +51,69 @@ async def upload_pdf(file: UploadFile = File(...)):
         )
     )
 
-    # FIX 2: Run the heavy, synchronous ingestion process (process_pdf) in a thread.
-    # This includes PDF parsing, chunking, and synchronous upserting/embedding.
     result = await asyncio.to_thread(process_pdf, file_location)
-
-    # FIX 3: Run the synchronous file deletion (os.remove) in a thread.
     await asyncio.to_thread(os.remove, file_location)
-    
+
     return {"status": "success", "details": result}
 
-# Final Search endpoint (Now fully Non-Blocking)
+
+# -- Search --
+
 @app.post("/search")
 async def rag_search(q: str = Form(...), k: int = Form(5)):
-    # FIX: Run the synchronous search_query (Gemini embedding + Qdrant search) in a thread.
-    # This is essential for the search endpoint's stability.
     result = await asyncio.to_thread(search_query, q, top_k=k)
     return result
+
+
+# -- Chat --
+
+class ChatRequest(BaseModel):
+    message: str
+    session_id: str = "default"
+    top_k: int = 5
+    advanced: bool = False
+
+
+@app.post("/chat/message")
+async def chat_message(request: ChatRequest):
+    if request.advanced:
+        result = await asyncio.to_thread(
+            advanced_chat, request.message, request.session_id, request.top_k
+        )
+    else:
+        result = await asyncio.to_thread(
+            chat, request.message, request.session_id, request.top_k
+        )
+    return result
+
+
+@app.get("/chat/stream")
+async def chat_stream_endpoint(
+    message: str, session_id: str = "default", top_k: int = 5
+):
+    async def generate():
+        for chunk in chat_stream(message, session_id, top_k):
+            yield f"data: {chunk}\n\n"
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "Connection": "keep-alive"},
+    )
+
+
+@app.get("/chat/history/{session_id}")
+async def get_chat_history(session_id: str):
+    history = get_conversation_history(session_id)
+    messages = [
+        {"role": "user" if i % 2 == 0 else "assistant", "content": msg.content}
+        for i, msg in enumerate(history)
+    ]
+    return {"session_id": session_id, "messages": messages}
+
+
+@app.delete("/chat/history/{session_id}")
+async def delete_chat_history(session_id: str):
+    clear_history(session_id)
+    return {"status": "success", "message": f"History cleared for session {session_id}"}

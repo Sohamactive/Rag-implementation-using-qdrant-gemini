@@ -2,9 +2,6 @@ from typing import List, Union, Tuple
 from backend.embeddings import embed_text
 from backend.qdrant_utils import q_client, COLLECTION_NAME
 from google import genai
-
-
-# Gemini client for generating final answers (RAG generation)
 llm = genai.Client()
 
 
@@ -112,7 +109,7 @@ def search_query(query: str, top_k: int = 5) -> dict:
     """
 
     response = llm.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-2.0-flash",
         contents=prompt
     )
 
