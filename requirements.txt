@@ -59,10 +59,8 @@ pydantic_core==2.41.5
 Pygments==2.19.2
 pyparsing==3.2.5
 pypdf==6.4.0
-pyreadline3==3.5.4
 python-dotenv==1.2.1
 python-multipart==0.0.20
-pywin32==311
 PyYAML==6.0.3
 qdrant-client==1.16.1
 requests==2.32.5
@@ -87,7 +85,6 @@ urllib3==2.5.0
 uvicorn==0.38.0
 watchfiles==1.1.1
 websockets==15.0.1
-win32_setctime==1.2.0
 ## The following requirements were added by pip freeze:
 cffi==2.0.0
 cryptography==46.0.5
