@@ -2,7 +2,7 @@
 
 This is a production-ready RAG (Retrieval-Augmented Generation) backend built with FastAPI. It uses Google Gemini Embeddings for high-quality semantic search and Qdrant as the vector database.
 
-The pipeline is non-blocking, designed for concurrent requests, and optimized for indexing large documents.
+The pipeline is non-blocking, designed for concurrent requests, and optimized for indexing documents.
 
 ## ⚙️ Setup and Installation
 
@@ -23,3 +23,8 @@ QDRANT_API_KEY="" # Use only if your Qdrant instance requires it
 QDRANT_COLLECTION="rag_documents_768"
 ```
 
+
+future endeavors :<br>
+[] implementing graphrag , pageindex, and other types of rag
+
+[] deploying a full fledged app
