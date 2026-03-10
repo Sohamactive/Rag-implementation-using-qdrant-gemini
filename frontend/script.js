@@ -335,22 +335,22 @@ newChatBtn.addEventListener("click", async () => {
   chatMessages.innerHTML = `
     <div class="welcome-message">
       <div class="welcome-icon">
-        <i class="fas fa-file-alt"></i>
+        <i class="fas fa-comments"></i>
       </div>
-      <h2>Start by uploading a document</h2>
-      <p>Add a PDF from the sidebar and ask questions about its content.</p>
+      <h2>Welcome to RAG Chat!</h2>
+      <p>Upload your PDF documents using the sidebar, then ask questions about them.</p>
       <div class="quick-tips">
         <div class="tip">
-          <i class="fas fa-arrow-left"></i>
-          <span>Upload one or more PDFs from the sidebar</span>
+          <i class="fas fa-lightbulb"></i>
+          <span>Upload multiple PDFs to build your knowledge base</span>
         </div>
         <div class="tip">
-          <i class="fas fa-keyboard"></i>
-          <span>Type a question below and press Enter</span>
+          <i class="fas fa-search"></i>
+          <span>Ask specific questions for better answers</span>
         </div>
         <div class="tip">
-          <i class="fas fa-quote-left"></i>
-          <span>Specific questions return better results</span>
+          <i class="fas fa-brain"></i>
+          <span>AI uses your documents to provide accurate responses</span>
         </div>
       </div>
     </div>
