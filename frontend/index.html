@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="dark">
-  <title>RAG Chat Assistant</title>
+  <title>RAG Chat</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -16,34 +16,34 @@
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-header">
-        <h2><i class="fas fa-robot"></i> RAG Assistant</h2>
+        <h2><i class="fas fa-layer-group"></i> RAG Chat</h2>
       </div>
-      
+
       <div class="upload-section">
-        <h3><i class="fas fa-file-pdf"></i> Upload Documents</h3>
+        <h3>Upload</h3>
         <form id="upload-form">
           <label class="file-upload-label" for="file-input">
-            <i class="fas fa-cloud-upload-alt"></i>
+            <i class="fas fa-file-pdf"></i>
             <span id="file-name">Choose PDF file</span>
           </label>
           <input type="file" id="file-input" name="file" accept=".pdf" hidden>
           <button type="submit" class="upload-btn" disabled>
-            <i class="fas fa-upload"></i> Upload
+            <i class="fas fa-arrow-up"></i> Upload
           </button>
         </form>
         <div id="upload-status" class="upload-status"></div>
       </div>
 
       <div class="documents-section">
-        <h3><i class="fas fa-folder-open"></i> Uploaded Files</h3>
+        <h3>Documents</h3>
         <ul id="document-list" class="document-list">
-          <li class="empty-state">No documents uploaded yet</li>
+          <li class="empty-state">No documents yet</li>
         </ul>
       </div>
 
       <div class="sidebar-footer">
         <div class="settings">
-          <label for="top-k">Results to use:</label>
+          <label for="top-k">Top results:</label>
           <input type="number" id="top-k" value="5" min="1" max="20">
         </div>
         <button id="new-chat-btn" class="new-chat-btn">
@@ -55,30 +55,30 @@
     <!-- Main Chat Area -->
     <main class="chat-container">
       <div class="chat-header">
-        <h1>Chat with your Documents</h1>
-        <p>Upload PDFs and ask questions about their content</p>
+        <h1>Document Chat</h1>
+        <p>Upload a PDF, then ask anything</p>
         <span class="session-badge" id="session-badge"></span>
       </div>
 
       <div class="chat-messages" id="chat-messages">
         <div class="welcome-message">
           <div class="welcome-icon">
-            <i class="fas fa-comments"></i>
+            <i class="fas fa-file-alt"></i>
           </div>
-          <h2>Welcome to RAG Chat!</h2>
-          <p>Upload your PDF documents using the sidebar, then ask questions about them.</p>
+          <h2>Start by uploading a document</h2>
+          <p>Add a PDF from the sidebar and ask questions about its content.</p>
           <div class="quick-tips">
             <div class="tip">
-              <i class="fas fa-lightbulb"></i>
-              <span>Upload multiple PDFs to build your knowledge base</span>
+              <i class="fas fa-arrow-left"></i>
+              <span>Upload one or more PDFs from the sidebar</span>
             </div>
             <div class="tip">
-              <i class="fas fa-search"></i>
-              <span>Ask specific questions for better answers</span>
+              <i class="fas fa-keyboard"></i>
+              <span>Type a question below and press Enter</span>
             </div>
             <div class="tip">
-              <i class="fas fa-brain"></i>
-              <span>AI uses your documents to provide accurate responses</span>
+              <i class="fas fa-quote-left"></i>
+              <span>Specific questions return better results</span>
             </div>
           </div>
         </div>
@@ -87,18 +87,18 @@
       <div class="chat-input-container">
         <form id="chat-form">
           <div class="input-wrapper">
-            <textarea 
-              id="chat-input" 
-              placeholder="Ask a question about your documents..." 
+            <textarea
+              id="chat-input"
+              placeholder="Ask a question about your documents..."
               rows="1"
               autofocus
             ></textarea>
             <button type="submit" id="send-btn" disabled>
-              <i class="fas fa-paper-plane"></i>
+              <i class="fas fa-arrow-up"></i>
             </button>
           </div>
         </form>
-        <p class="input-hint">Press Enter to send, Shift+Enter for new line</p>
+        <p class="input-hint">Enter to send &mdash; Shift+Enter for new line</p>
       </div>
     </main>
   </div>
